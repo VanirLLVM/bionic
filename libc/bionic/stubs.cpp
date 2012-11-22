@@ -426,7 +426,7 @@ netent* getnetbyname(const char* name) {
 }
 
 void endpwent() {
-  UNIMPLEMENTED;
+  //UNIMPLEMENTED;
 }
 
 mntent* getmntent(FILE* f) {

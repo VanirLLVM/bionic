@@ -72,7 +72,6 @@ libm_common_src_files:= \
 	src/s_ceill.c \
 	src/s_copysign.c \
 	src/s_copysignf.c \
-	src/s_cos.c \
 	src/s_cosf.c \
 	src/s_erf.c \
 	src/s_erff.c \
@@ -132,7 +131,6 @@ libm_common_src_files:= \
 	src/s_signgam.c \
 	src/s_significand.c \
 	src/s_significandf.c \
-	src/s_sin.c \
 	src/s_sinf.c \
 	src/s_tan.c \
 	src/s_tanf.c \
@@ -165,9 +163,13 @@ ifeq ($(TARGET_ARCH),arm)
   libm_common_includes = $(LOCAL_PATH)/arm
 endif
 
+libm_common_src_files += \
+    src/s_cos.c \
+    src/s_sin.c
+
 ifeq ($(TARGET_OS)-$(TARGET_ARCH),linux-x86)
   libm_common_src_files += \
-	i387/fenv.c \
+    i387/fenv.c \
 	i387/s_scalbnl.S \
 	i387/s_scalbn.S \
 	i387/s_scalbnf.S \
@@ -182,7 +184,10 @@ ifeq ($(TARGET_ARCH),mips)
 	src/s_scalbln.c \
 	src/s_scalbn.c \
 	src/s_scalbnf.c \
-	src/e_sqrtf.c
+	src/e_sqrtf.c \
+	src/s_sin.c \	
+    src/s_cos.c	
+		
 
   libm_common_includes = $(LOCAL_PATH)/mips
   # Need to build *rint* functions

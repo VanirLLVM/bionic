@@ -449,6 +449,7 @@ libc_common_src_files += \
 	arch-x86/string/strncmp_wrapper.S \
 	arch-x86/string/strlen_wrapper.S \
 	string/strcpy.c \
+	bionic/memmove_words.c \
 	bionic/pthread-atfork.c \
 	bionic/pthread-rwlocks.c \
 	bionic/pthread-timers.c \
@@ -486,6 +487,9 @@ libc_common_src_files += \
 	arch-mips/string/memset.S \
 	arch-mips/string/memcpy.S \
 	arch-mips/string/mips_strlen.c
+
+libc_common_src_files += \
+    bionic/memmove_words.c
 
 libc_common_src_files += \
 	string/bcopy.c \

@@ -15,58 +15,29 @@ libc_common_src_files := \
 	unistd/system.c \
 	unistd/time.c \
 	stdio/asprintf.c \
-	stdio/clrerr.c \
-	stdio/fclose.c \
-	stdio/fdopen.c \
-	stdio/feof.c \
-	stdio/ferror.c \
 	stdio/fflush.c \
 	stdio/fgetc.c \
-	stdio/fgetln.c \
-	stdio/fgetpos.c \
-	stdio/fgets.c \
-	stdio/fileno.c \
 	stdio/findfp.c \
-	stdio/flags.c \
-	stdio/fopen.c \
 	stdio/fprintf.c \
-	stdio/fpurge.c \
 	stdio/fputc.c \
-	stdio/fputs.c \
 	stdio/fread.c \
 	stdio/freopen.c \
 	stdio/fscanf.c \
 	stdio/fseek.c \
-	stdio/fsetpos.c \
 	stdio/ftell.c \
-	stdio/funopen.c \
 	stdio/fvwrite.c \
-	stdio/fwalk.c \
-	stdio/fwrite.c \
-	stdio/getc.c \
-	stdio/getchar.c \
 	stdio/gets.c \
 	stdio/makebuf.c \
 	stdio/mktemp.c \
 	stdio/printf.c \
-	stdio/putc.c \
-	stdio/putchar.c \
-	stdio/puts.c \
-	stdio/putw.c \
 	stdio/refill.c \
-	stdio/remove.c \
 	stdio/rewind.c \
-	stdio/rget.c \
 	stdio/scanf.c \
-	stdio/setbuf.c \
-	stdio/setbuffer.c \
 	stdio/setvbuf.c \
 	stdio/snprintf.c\
 	stdio/sprintf.c \
 	stdio/sscanf.c \
 	stdio/stdio.c \
-	stdio/tempnam.c \
-	stdio/tmpnam.c \
 	stdio/ungetc.c \
 	stdio/vasprintf.c \
 	stdio/vfprintf.c \
@@ -77,13 +48,11 @@ libc_common_src_files := \
 	stdio/vscanf.c \
 	stdio/vsscanf.c \
 	stdio/wbuf.c \
-	stdio/wsetup.c \
 	stdlib/atexit.c \
 	stdlib/ctype_.c \
 	stdlib/exit.c \
 	stdlib/getenv.c \
 	stdlib/putenv.c \
-	stdlib/qsort.c \
 	stdlib/setenv.c \
 	stdlib/strtod.c \
 	stdlib/strtoimax.c \
@@ -170,7 +139,6 @@ libc_common_src_files := \
 	bionic/recv.c \
 	bionic/sched_cpualloc.c \
 	bionic/sched_cpucount.c \
-	bionic/sched_getaffinity.c \
 	bionic/sched_getcpu.c \
 	bionic/semaphore.c \
 	bionic/send.c \
@@ -238,7 +206,8 @@ libc_bionic_src_files := \
     bionic/brk.cpp \
     bionic/dirent.cpp \
     bionic/__errno.c \
-    bionic/eventfd.cpp \
+    bionic/eventfd_read.cpp \
+    bionic/eventfd_write.cpp \
     bionic/__fgets_chk.cpp \
     bionic/getauxval.cpp \
     bionic/getcwd.cpp \
@@ -263,6 +232,7 @@ libc_bionic_src_files := \
     bionic/raise.cpp \
     bionic/sbrk.cpp \
     bionic/scandir.cpp \
+    bionic/sched_getaffinity.cpp \
     bionic/__set_errno.cpp \
     bionic/setlocale.cpp \
     bionic/signalfd.cpp \
@@ -288,6 +258,37 @@ libc_bionic_src_files := \
     bionic/wchar.cpp \
 
 libc_upstream_freebsd_src_files := \
+    upstream-freebsd/lib/libc/stdio/clrerr.c \
+    upstream-freebsd/lib/libc/stdio/fclose.c \
+    upstream-freebsd/lib/libc/stdio/fdopen.c \
+    upstream-freebsd/lib/libc/stdio/feof.c \
+    upstream-freebsd/lib/libc/stdio/ferror.c \
+    upstream-freebsd/lib/libc/stdio/fgetln.c \
+    upstream-freebsd/lib/libc/stdio/fgetpos.c \
+    upstream-freebsd/lib/libc/stdio/fgets.c \
+    upstream-freebsd/lib/libc/stdio/fileno.c \
+    upstream-freebsd/lib/libc/stdio/flags.c \
+    upstream-freebsd/lib/libc/stdio/fopen.c \
+    upstream-freebsd/lib/libc/stdio/fpurge.c \
+    upstream-freebsd/lib/libc/stdio/fputs.c \
+    upstream-freebsd/lib/libc/stdio/fsetpos.c \
+    upstream-freebsd/lib/libc/stdio/funopen.c \
+    upstream-freebsd/lib/libc/stdio/fwalk.c \
+    upstream-freebsd/lib/libc/stdio/fwrite.c \
+    upstream-freebsd/lib/libc/stdio/getc.c \
+    upstream-freebsd/lib/libc/stdio/getchar.c \
+    upstream-freebsd/lib/libc/stdio/putc.c \
+    upstream-freebsd/lib/libc/stdio/putchar.c \
+    upstream-freebsd/lib/libc/stdio/puts.c \
+    upstream-freebsd/lib/libc/stdio/putw.c \
+    upstream-freebsd/lib/libc/stdio/remove.c \
+    upstream-freebsd/lib/libc/stdio/rget.c \
+    upstream-freebsd/lib/libc/stdio/setbuf.c \
+    upstream-freebsd/lib/libc/stdio/setbuffer.c \
+    upstream-freebsd/lib/libc/stdio/tempnam.c \
+    upstream-freebsd/lib/libc/stdio/tmpnam.c \
+    upstream-freebsd/lib/libc/stdio/wsetup.c \
+    upstream-freebsd/lib/libc/stdlib/qsort.c \
     upstream-freebsd/lib/libc/stdlib/realpath.c \
     upstream-freebsd/lib/libc/string/wcpcpy.c \
     upstream-freebsd/lib/libc/string/wcpncpy.c \

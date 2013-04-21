@@ -1,7 +1,9 @@
-/*	$OpenBSD: assert.c,v 1.8 2005/08/08 08:05:33 espie Exp $ */
 /*-
- * Copyright (c) 1992, 1993
+ * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
+ *
+ * This code is derived from software contributed to Berkeley by
+ * Chris Torek.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -11,7 +13,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
+ * 4. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
  *
@@ -28,16 +30,32 @@
  * SUCH DAMAGE.
  */
 
-#include <assert.h>
+#if defined(LIBC_SCCS) && !defined(lint)
+static char sccsid[] = "@(#)clrerr.c	8.1 (Berkeley) 6/4/93";
+#endif /* LIBC_SCCS and not lint */
+#include <sys/cdefs.h>
+__FBSDID("$FreeBSD$");
 
-#include "libc_logging.h"
+#include "namespace.h"
+#include <stdio.h>
+#include "un-namespace.h"
+#include "libc_private.h"
 
-void __assert(const char* file, int line, const char* failed_expression) {
-  __libc_fatal("%s:%d: assertion \"%s\" failed", file, line, failed_expression);
-  /* NOTREACHED */
+#undef clearerr
+#undef clearerr_unlocked
+
+void
+clearerr(fp)
+	FILE *fp;
+{
+	FLOCKFILE(fp);
+	__sclearerr(fp);
+	FUNLOCKFILE(fp);
 }
 
-void __assert2(const char* file, int line, const char* function, const char* failed_expression) {
-  __libc_fatal("%s:%d: %s: assertion \"%s\" failed", file, line, function, failed_expression);
-  /* NOTREACHED */
+void
+clearerr_unlocked(FILE *fp)
+{
+
+	__sclearerr(fp);
 }

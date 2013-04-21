@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 The Android Open Source Project
+ * Copyright (C) 2010 The Android Open Source Project
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,20 @@
  * SUCH DAMAGE.
  */
 
-#include <stdlib.h>
+#define _GNU_SOURCE 1
+#include <sched.h>
+#include <string.h>
 
-#include "bionic_ssp.h"
-#include "libc_logging.h"
+extern "C" int __sched_getaffinity(pid_t, size_t, cpu_set_t*);
 
-void __stack_chk_fail() {
-  __libc_fatal("stack corruption detected");
+int sched_getaffinity(pid_t pid, size_t set_size, cpu_set_t* set) {
+  int rc = __sched_getaffinity(pid, set_size, set);
+  if (rc == -1) {
+      return -1;
+  }
+
+  // Clear any bytes the kernel didn't touch.
+  // (The kernel returns the number of bytes written on success.)
+  memset(reinterpret_cast<char*>(set) + rc, 0, set_size - rc);
+  return 0;
 }

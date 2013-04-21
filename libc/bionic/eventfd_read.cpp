@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 The Android Open Source Project
+ * Copyright (C) 2010 The Android Open Source Project
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,11 +26,9 @@
  * SUCH DAMAGE.
  */
 
-#include <stdlib.h>
+#include <sys/eventfd.h>
+#include <unistd.h>
 
-#include "bionic_ssp.h"
-#include "libc_logging.h"
-
-void __stack_chk_fail() {
-  __libc_fatal("stack corruption detected");
+int eventfd_read(int fd, eventfd_t* value) {
+  return (read(fd, value, sizeof(*value)) == sizeof(*value)) ? 0 : -1;
 }

@@ -440,17 +440,14 @@ dl_iterate_phdr(int (*cb)(dl_phdr_info *info, size_t size, void *data),
 #endif
 
 static Elf32_Sym* soinfo_elf_lookup(soinfo* si, unsigned hash, const char* name) {
-    Elf32_Sym* s;
     Elf32_Sym* symtab = si->symtab;
     const char* strtab = si->strtab;
-    unsigned n;
 
     TRACE_TYPE(LOOKUP, "SEARCH %s in %s@0x%08x %08x %d",
                name, si->name, si->base, hash, hash % si->nbucket);
-    n = hash % si->nbucket;
 
-    for (n = si->bucket[hash % si->nbucket]; n != 0; n = si->chain[n]) {
-        s = symtab + n;
+    for (unsigned n = si->bucket[hash % si->nbucket]; n != 0; n = si->chain[n]) {
+        Elf32_Sym* s = symtab + n;
         if (strcmp(strtab + s->st_name, name)) continue;
 
             /* only concern ourselves with global and weak symbol definitions */
@@ -801,14 +798,8 @@ static int soinfo_unload(soinfo* si) {
     for (Elf32_Dyn* d = si->dynamic; d->d_tag != DT_NULL; ++d) {
       if (d->d_tag == DT_NEEDED) {
         const char* library_name = si->strtab + d->d_un.d_val;
-        soinfo* lsi = find_loaded_library(library_name);
-        if (lsi != NULL) {
-          TRACE("%s needs to unload %s", si->name, lsi->name);
-          soinfo_unload(lsi);
-        } else {
-          // TODO: should we return -1 in this case?
-          DL_ERR("\"%s\": could not unload dependent library", si->name);
-        }
+        TRACE("%s needs to unload %s", si->name, library_name);
+        soinfo_unload(find_loaded_library(library_name));
       }
     }
 
@@ -1161,21 +1152,6 @@ static int mips_relocate_got(soinfo* si, soinfo* needed[]) {
 }
 #endif
 
-/* Please read the "Initialization and Termination functions" functions.
- * of the linker design note in bionic/linker/README.TXT to understand
- * what the following code is doing.
- *
- * The important things to remember are:
- *
- *   DT_PREINIT_ARRAY must be called first for executables, and should
- *   not appear in shared libraries.
- *
- *   DT_INIT should be called before DT_INIT_ARRAY if both are present
- *
- *   DT_FINI should be called after DT_FINI_ARRAY if both are present
- *
- *   DT_FINI_ARRAY must be parsed in reverse order.
- */
 void soinfo::CallArray(const char* array_name UNUSED, linker_function_t* functions, size_t count, bool reverse) {
   if (functions == NULL) {
     return;
@@ -1210,6 +1186,8 @@ void soinfo::CallFunction(const char* function_name UNUSED, linker_function_t fu
 }
 
 void soinfo::CallPreInitConstructors() {
+  // DT_PREINIT_ARRAY functions are called before any other constructors for executables,
+  // but ignored in a shared library.
   CallArray("DT_PREINIT_ARRAY", preinit_array, preinit_array_count, false);
 }
 
@@ -1230,31 +1208,36 @@ void soinfo::CallConstructors() {
   //    out above, the libc constructor will be called again (recursively!).
   constructors_called = true;
 
-  if (!(flags & FLAG_EXE) && preinit_array) {
-    DL_ERR("shared library \"%s\" has a preinit_array table @ %p", name, preinit_array);
-    return;
+  if ((flags & FLAG_EXE) == 0 && preinit_array != NULL) {
+    // The GNU dynamic linker silently ignores these, but we warn the developer.
+    PRINT("\"%s\": ignoring %d-entry DT_PREINIT_ARRAY in shared library!",
+          name, preinit_array_count);
   }
 
   if (dynamic != NULL) {
     for (Elf32_Dyn* d = dynamic; d->d_tag != DT_NULL; ++d) {
       if (d->d_tag == DT_NEEDED) {
         const char* library_name = strtab + d->d_un.d_val;
-        soinfo* lsi = find_loaded_library(library_name);
-        if (lsi == NULL) {
-          DL_ERR("\"%s\": could not initialize dependent library", name);
-        } else {
-          lsi->CallConstructors();
-        }
+        TRACE("\"%s\": calling constructors in DT_NEEDED \"%s\"", name, library_name);
+        find_loaded_library(library_name)->CallConstructors();
       }
     }
   }
 
+  TRACE("\"%s\": calling constructors", name);
+
+  // DT_INIT should be called before DT_INIT_ARRAY if both are present.
   CallFunction("DT_INIT", init_func);
   CallArray("DT_INIT_ARRAY", init_array, init_array_count, false);
 }
 
 void soinfo::CallDestructors() {
+  TRACE("\"%s\": calling destructors", name);
+
+  // DT_FINI_ARRAY must be parsed in reverse order.
   CallArray("DT_FINI_ARRAY", fini_array, fini_array_count, true);
+
+  // DT_FINI should be called after DT_FINI_ARRAY if both are present.
   CallFunction("DT_FINI", fini_func);
 }
 
@@ -1353,7 +1336,7 @@ static bool soinfo_link_image(soinfo* si) {
                                     &si->ARM_exidx, &si->ARM_exidx_count);
 #endif
 
-    /* extract useful information from dynamic section */
+    // Extract useful information from dynamic section.
     uint32_t needed_count = 0;
     for (Elf32_Dyn* d = si->dynamic; d->d_tag != DT_NULL; ++d) {
         DEBUG("d = %p, d[0](tag) = 0x%08x d[1](val) = 0x%08x", d, d->d_tag, d->d_un.d_val);
@@ -1404,29 +1387,29 @@ static bool soinfo_link_image(soinfo* si) {
             return false;
         case DT_INIT:
             si->init_func = reinterpret_cast<linker_function_t>(base + d->d_un.d_ptr);
-            DEBUG("%s constructors (init func) found at %p", si->name, si->init_func);
+            DEBUG("%s constructors (DT_INIT) found at %p", si->name, si->init_func);
             break;
         case DT_FINI:
             si->fini_func = reinterpret_cast<linker_function_t>(base + d->d_un.d_ptr);
-            DEBUG("%s destructors (fini func) found at %p", si->name, si->fini_func);
+            DEBUG("%s destructors (DT_FINI) found at %p", si->name, si->fini_func);
             break;
         case DT_INIT_ARRAY:
             si->init_array = reinterpret_cast<linker_function_t*>(base + d->d_un.d_ptr);
-            DEBUG("%s constructors (init_array) found at %p", si->name, si->init_array);
+            DEBUG("%s constructors (DT_INIT_ARRAY) found at %p", si->name, si->init_array);
             break;
         case DT_INIT_ARRAYSZ:
             si->init_array_count = ((unsigned)d->d_un.d_val) / sizeof(Elf32_Addr);
             break;
         case DT_FINI_ARRAY:
             si->fini_array = reinterpret_cast<linker_function_t*>(base + d->d_un.d_ptr);
-            DEBUG("%s destructors (fini_array) found at %p", si->name, si->fini_array);
+            DEBUG("%s destructors (DT_FINI_ARRAY) found at %p", si->name, si->fini_array);
             break;
         case DT_FINI_ARRAYSZ:
             si->fini_array_count = ((unsigned)d->d_un.d_val) / sizeof(Elf32_Addr);
             break;
         case DT_PREINIT_ARRAY:
             si->preinit_array = reinterpret_cast<linker_function_t*>(base + d->d_un.d_ptr);
-            DEBUG("%s constructors (preinit_array) found at %p", si->name, si->preinit_array);
+            DEBUG("%s constructors (DT_PREINIT_ARRAY) found at %p", si->name, si->preinit_array);
             break;
         case DT_PREINIT_ARRAYSZ:
             si->preinit_array_count = ((unsigned)d->d_un.d_val) / sizeof(Elf32_Addr);
@@ -1595,11 +1578,6 @@ static bool soinfo_link_image(soinfo* si) {
         return false;
     }
 
-    // If this is a setuid/setgid program, close the security hole described in
-    // ftp://ftp.freebsd.org/pub/FreeBSD/CERT/advisories/FreeBSD-SA-02:23.stdio.asc
-    if (get_AT_SECURE()) {
-        nullify_closed_stdio();
-    }
     notify_gdb_of_load(si);
     return true;
 }
@@ -1627,6 +1605,12 @@ static Elf32_Addr __linker_init_post_relocation(KernelArgumentBlock& args, Elf32
 
     // Initialize environment functions, and get to the ELF aux vectors table.
     linker_env_init(args);
+
+    // If this is a setuid/setgid program, close the security hole described in
+    // ftp://ftp.freebsd.org/pub/FreeBSD/CERT/advisories/FreeBSD-SA-02:23.stdio.asc
+    if (get_AT_SECURE()) {
+        nullify_closed_stdio();
+    }
 
     debuggerd_init();
 

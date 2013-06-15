@@ -211,6 +211,9 @@
 #define __statement(x)	(x)
 #endif
 
+#define __printflike(x, y) __attribute__((__format__(printf, x, y))) __attribute__((__nonnull__(x)))
+#define __scanflike(x, y) __attribute__((__format__(scanf, x, y))) __attribute__((__nonnull__(x)))
+
 /*
  * C99 defines the restrict type qualifier keyword, which was made available
  * in GCC 2.92.
@@ -517,6 +520,12 @@
 
 #if defined(_FORTIFY_SOURCE) && _FORTIFY_SOURCE > 0 && defined(__OPTIMIZE__) && __OPTIMIZE__ > 0 && !defined(__clang__)
 #define __BIONIC_FORTIFY 1
+#if _FORTIFY_SOURCE == 2
+#define __bos(s) __builtin_object_size((s), 1)
+#else
+#define __bos(s) __builtin_object_size((s), 0)
+#endif
+
 #define __BIONIC_FORTIFY_INLINE \
     extern inline \
     __attribute__ ((always_inline)) \

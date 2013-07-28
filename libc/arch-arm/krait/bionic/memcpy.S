@@ -207,4 +207,3 @@ ENTRY(memcpy)
 	mov	r0, r12
 	bx	lr
 END(memcpy)
-

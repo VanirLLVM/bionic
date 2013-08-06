@@ -366,9 +366,9 @@ libc_upstream_netbsd_src_files := \
 # =========================================================
 ifeq ($(TARGET_ARCH),arm)
 libc_common_src_files += \
-	string/strncmp.c \
-#	bionic/memmove.c.arm \
-#	string/bcopy.c \
+	bionic/memmove.c.arm \
+	string/bcopy.c \
+	string/strncmp.c
 
 # These files need to be arm so that gdbserver
 # can set breakpoints in them without messing
@@ -382,8 +382,7 @@ libc_common_src_files += \
 libc_static_common_src_files += \
     bionic/pthread.c.arm \
     bionic/pthread_create.cpp.arm \
-    bionic/pthread_key.cpp.arm \
-
+    bionic/pthread_key.cpp.arm
 endif # arm
 
 ifeq ($(TARGET_ARCH),x86)

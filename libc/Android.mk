@@ -399,6 +399,8 @@ libc_static_common_src_files += \
     bionic/pthread.c.arm \
     bionic/pthread_create.cpp.arm \
     bionic/pthread_key.cpp.arm
+
+LOCAL_CFLAGS := -Wno-error=strict-aliasing
 endif # arm
 
 ifeq ($(TARGET_ARCH),x86)
@@ -452,6 +454,7 @@ libc_static_common_src_files += \
     bionic/pthread_create.cpp \
     bionic/pthread_key.cpp \
 
+LOCAL_CFLAGS := -Wno-error=strict-aliasing
 endif # mips
 
 ifeq ($(strip $(TARGET_CPU_VARIANT)),)

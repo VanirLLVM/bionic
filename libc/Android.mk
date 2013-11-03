@@ -455,7 +455,7 @@ libc_static_common_src_files += \
 
 endif # mips
 
-LOCAL_CFLAGS := -Wno-error=strict-aliasing -Werror=return-type
+LOCAL_CFLAGS := -Wno-error=strict-aliasing -Wno-return-type
 
 ifeq ($(strip $(TARGET_CPU_VARIANT)),)
 $(warning TARGET_CPU_VARIANT is not defined)

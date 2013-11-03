@@ -400,7 +400,6 @@ libc_static_common_src_files += \
     bionic/pthread_create.cpp.arm \
     bionic/pthread_key.cpp.arm
 
-LOCAL_CFLAGS := -Wno-error=strict-aliasing
 endif # arm
 
 ifeq ($(TARGET_ARCH),x86)
@@ -454,8 +453,9 @@ libc_static_common_src_files += \
     bionic/pthread_create.cpp \
     bionic/pthread_key.cpp \
 
-LOCAL_CFLAGS := -Wno-error=strict-aliasing
 endif # mips
+
+LOCAL_CFLAGS := -Wno-error=strict-aliasing -Werror=return-type
 
 ifeq ($(strip $(TARGET_CPU_VARIANT)),)
 $(warning TARGET_CPU_VARIANT is not defined)

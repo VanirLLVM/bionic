@@ -10,6 +10,24 @@ libm_common_src_files := \
 libm_common_src_files += \
     sincos.c \
 
+# Upstream glibc
+# TODO: sysdeps is not fully upstream and not libm
+libm_common_src_files += \
+    upstream-glibc/math/e_exp10.c \
+    upstream-glibc/math/e_exp10f.c \
+    upstream-glibc/math/w_exp10.c \
+    upstream-glibc/math/w_exp10f.c \
+    upstream-glibc/sysdeps/k_standard.c \
+    upstream-glibc/sysdeps/s_copysign.c \
+    upstream-glibc/sysdeps/s_lib_version.c \
+    upstream-glibc/sysdeps/s_matherr.c
+
+# TODO: on Android, "long double" is "double".
+#    upstream-glibc/math/e_exp10l.c \
+#    upstream-glibc/math/w_exp10l.c
+
+# Upstream FreeBSD
+
 libm_common_src_files += \
     upstream-freebsd/lib/msun/bsdsrc/b_exp.c \
     upstream-freebsd/lib/msun/bsdsrc/b_log.c \
@@ -218,7 +236,11 @@ libm_common_src_files += fake_long_double.c
 
 # TODO: re-enable i387/e_sqrtf.S for x86, and maybe others.
 
-libm_common_cflags := -DFLT_EVAL_METHOD=0
+libm_common_cflags := \
+   -DFLT_EVAL_METHOD=0 \
+   -DNO_LONG_DOUBLE \
+   -include $(LOCAL_PATH)/glibc-compat.h
+
 libm_common_includes := $(LOCAL_PATH)/upstream-freebsd/lib/msun/src/
 
 libm_arm_includes := $(LOCAL_PATH)/arm

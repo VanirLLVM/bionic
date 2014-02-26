@@ -87,6 +87,10 @@ rint(double x)
 	return w-TWO52[sx];
 }
 
+// For upstream glibc
+__weak_reference(rint, __rint);
+__weak_reference(rint, __rintl);
+
 #if (LDBL_MANT_DIG == 53)
 __weak_reference(rint, rintl);
 #endif
